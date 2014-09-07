@@ -30,6 +30,10 @@
 
 #include <ram_console.h>
 
+#ifdef CONFIG_KEXEC_HARDBOOT
+#include <linux/memblock.h>
+#endif
+
 #ifdef CONFIG_LGE_PM
 #include CONFIG_BOARD_HEADER_FILE
 #endif
@@ -457,6 +461,16 @@ void __init lge_add_persistent_ram(void)
 
 void __init lge_reserve(void)
 {
+#ifdef CONFIG_KEXEC_HARDBOOT
+ // Reserve space for hardboot page, just before the ram_console
+ struct membank* bank = &meminfo.bank[0];
+ phys_addr_t start = bank->start + bank->size - SZ_1M - LGE_PERSISTENT_RAM_SIZE;
+ int ret = memblock_remove(start, SZ_1M);
+ if(!ret)
+     pr_info("Hardboot page reserved at 0x%X\n", start);
+ else
+    pr_err("Failed to reserve space for hardboot page at 0x%X!\n", start);
+#endif
 	lge_add_persistent_ram();
 }
 
