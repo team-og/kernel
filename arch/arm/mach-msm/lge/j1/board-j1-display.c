@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012, Code Aurora Forum. All rights reserved.
  * Copyright (c) 2012, LGE Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,8 +16,9 @@
 #include <linux/ioport.h>
 #include <linux/gpio.h>
 #include <linux/platform_device.h>
+#include <linux/platform_data/lm35xx_bl.h>
 #include <linux/bootmem.h>
-#include <linux/msm_ion.h>
+#include <linux/ion.h>
 #include <asm/mach-types.h>
 #include <mach/msm_memtypes.h>
 #include <mach/board.h>
@@ -54,9 +55,9 @@ extern int set_qlut_kcal_values(int kcal_r, int kcal_g, int kcal_b);
 extern int refresh_qlut_display(void);
 #else
 #error only kcal by Qucalcomm LUT is supported now!!!
-#endif //                      
-#endif //               
-#endif //                            
+#endif //CONFIG_LGE_QC_LCDC_LUT
+#endif //CONFIG_LGE_KCAL
+#endif //#if defined(CONFIG_MACH_LGE)
 
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 /* prim = 1366 x 768 x 3(bpp) x 3(pages) */
@@ -88,7 +89,7 @@ extern int refresh_qlut_display(void);
 #ifdef LGE_DSDR_KERNEL_SUPPORT
 #define MSM_FB_EXT_BUF_SIZE \
         (roundup((1920 * 1088 * 4), 4096) * 3) /* 4 bpp x 3 page */
-#else  /*                         */
+#else  /* LGE_DSDR_KERNEL_SUPPORT */
 #ifdef CONFIG_FB_MSM_HDMI_MSM_PANEL
 #define MSM_FB_EXT_BUF_SIZE \
 		(roundup((1920 * 1088 * 2), 4096) * 1) /* 2 bpp x 1 page */
@@ -98,8 +99,8 @@ extern int refresh_qlut_display(void);
 #else
 #define MSM_FB_EXT_BUF_SIZE	0
 #endif /* CONFIG_FB_MSM_HDMI_MSM_PANEL */
-#endif /*                         */
-#endif //                            
+#endif /* LGE_DSDR_KERNEL_SUPPORT */
+#endif //#if defined(CONFIG_MACH_LGE)
 
 #if defined(CONFIG_MACH_LGE)
 #ifdef CONFIG_FB_MSM_WRITEBACK_MSM_PANEL
@@ -114,7 +115,7 @@ extern int refresh_qlut_display(void);
 #else
 #define MSM_FB_WFD_BUF_SIZE     0
 #endif //CONFIG_FB_MSM_WRITEBACK_MSM_PANEL
-#endif //                            
+#endif //#if defined(CONFIG_MACH_LGE)
 
 #if defined(CONFIG_MACH_LGE)
 #define MSM_FB_SIZE \
@@ -122,7 +123,7 @@ extern int refresh_qlut_display(void);
 		MSM_FB_EXT_BUF_SIZE + MSM_FB_WFD_BUF_SIZE, 4096)
 #else //Qualcomm original
 #define MSM_FB_SIZE roundup(MSM_FB_PRIM_BUF_SIZE, 4096)
-#endif //                            
+#endif //#if defined(CONFIG_MACH_LGE)
 
 #ifdef CONFIG_FB_MSM_OVERLAY0_WRITEBACK
 #if defined(CONFIG_MACH_LGE)
@@ -138,7 +139,7 @@ extern int refresh_qlut_display(void);
 	#endif
 #else //Qualcomm original
 #define MSM_FB_OVERLAY0_WRITEBACK_SIZE roundup((1376 * 768 * 3 * 2), 4096)
-#endif //                            
+#endif //#if defined(CONFIG_MACH_LGE)
 #else
 #define MSM_FB_OVERLAY0_WRITEBACK_SIZE (0)
 #endif  /* CONFIG_FB_MSM_OVERLAY0_WRITEBACK */
@@ -152,9 +153,9 @@ extern int refresh_qlut_display(void);
 #if defined(CONFIG_FB_MSM_MIPI_LGIT_VIDEO_WXGA_PT)
 #define LGIT_IEF
 #endif
-//                                                                             
+//LGE_UPDATE_S  hojin.ryu@lge.com 20120629 IEF Switch define for camera preview
 #define LGIT_IEF_SWITCH
-//                                        
+//LGE_UPDATE_S  hojin.ryu@lge.com 20120629
 
 static struct resource msm_fb_resources[] = {
 	{
@@ -192,7 +193,7 @@ unsigned char apq8064_mhl_display_enabled(void)
 }
 
 static void set_mdp_clocks_for_wuxga(void);
-#endif /*                 */
+#endif /* CONFIG_MACH_LGE */
 
 static int msm_fb_detect_panel(const char *name)
 {
@@ -242,7 +243,7 @@ static int msm_fb_detect_panel(const char *name)
 
 #else
 	return 0;
-#endif /*                 */
+#endif /* CONFIG_MACH_LGE */
 }
 
 static struct msm_fb_platform_data msm_fb_pdata = {
@@ -356,9 +357,9 @@ static struct msm_bus_scale_pdata mdp_bus_scale_pdata = {
 static struct msm_panel_common_pdata mdp_pdata = {
 	.gpio = MDP_VSYNC_GPIO,
 	.mdp_max_clk = 266667000,
-	.mdp_max_bw = 2000000000,
-	.mdp_bw_ab_factor = 160,
-	.mdp_bw_ib_factor = 180,
+	.mdp_max_bw = 2000000000UL,
+	.mdp_bw_ab_factor = 115,
+	.mdp_bw_ib_factor = 125,
 	.mdp_bus_scale_table = &mdp_bus_scale_pdata,
 	.mdp_rev = MDP_REV_44,
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
@@ -379,9 +380,6 @@ void __init apq8064_mdp_writeback(struct memtype_reserve* reserve_table)
 		mdp_pdata.ov0_wb_size;
 	reserve_table[mdp_pdata.mem_hid].size +=
 		mdp_pdata.ov1_wb_size;
-
-	pr_info("mem_map: mdp reserved with size 0x%lx in pool\n",
-			mdp_pdata.ov0_wb_size + mdp_pdata.ov1_wb_size);
 #endif
 }
 
@@ -402,7 +400,7 @@ static struct platform_device kcal_platrom_device = {
 		.platform_data = &kcal_pdata,
 	}
 };
-#endif /*                 */
+#endif /* CONFIG_LGE_KCAL */
 
 static struct resource hdmi_msm_resources[] = {
 	{
@@ -518,7 +516,9 @@ static int mipi_dsi_panel_power(int on)
 		.disable_pin = 0,
 	};
 
-	pr_info("%s: onoff = %d\n", __func__, on);
+	printk(KERN_INFO "%s: mipi lcd function started status = %d \n", __func__, on);
+
+	pr_debug("%s: state : %d\n", __func__, on);
 
 	if (!dsi_power_on) {
 #if defined(CONFIG_FB_MSM_MIPI_HITACHI_VIDEO_HD_PT)
@@ -601,7 +601,6 @@ static int mipi_dsi_panel_power(int on)
 		dsi_power_on = true;
 
 	}
-  pr_info("%s: onoff = %d\n", __func__, on);
 	if (on) {
 
 #if defined(CONFIG_FB_MSM_MIPI_LGIT_VIDEO_WXGA_PT)
@@ -952,7 +951,7 @@ static int mipi_dsi_panel_power(int on)
 
 	return 0;
 }
-#endif //                            
+#endif //#if defined(CONFIG_MACH_LGE)
 
 static char mipi_dsi_splash_is_enabled(void)
 {
@@ -1164,7 +1163,7 @@ static struct platform_device mipi_dsi_toshiba_panel_device = {
 	}
 };
 
-#endif  /*              */
+#endif  /* LGE Not Used */
 
 static struct msm_bus_vectors dtv_bus_init_vectors[] = {
 	{
@@ -1496,9 +1495,7 @@ error:
 	return rc;
 }
 
-#if defined (CONFIG_BACKLIGHT_LM3530)
-extern void lm3530_lcd_backlight_set_level( int level);
-#elif defined (CONFIG_BACKLIGHT_LM3533)
+#if defined (CONFIG_BACKLIGHT_LM3533)
 extern void lm3533_lcd_backlight_set_level( int level);
 #endif /* CONFIG_BACKLIGHT_LMXXXX */
 
@@ -1744,7 +1741,7 @@ static int mipi_lgit_backlight_level(int level, int max, int min)
 	lm3530_lcd_backlight_set_level(level);
 	return 0;
 }
-//                                                                                
+//LGE_CHANGE_S [hj.eum@lge.com]  2012_02_06, for making one source of DSV feature.
 char lcd_mirror [2] = {0x36, 0x02};
 
 // values of DSV setting START
@@ -1761,7 +1758,7 @@ static char n_gamma_g_setting[10] = {0xD3, 0x72, 0x15, 0x76, 0x00, 0x00, 0x00, 0
 static char p_gamma_b_setting[10] = {0xD4, 0x72, 0x15, 0x76, 0x00, 0x00, 0x00, 0x50, 0x30, 0x02};
 static char n_gamma_b_setting[10] = {0xD5, 0x72, 0x15, 0x76, 0x00, 0x00, 0x00, 0x50, 0x30, 0x02};
 
-//                                        
+//LGE_UPDATE_S hojin.ryu@lge.com 20120629 
 #if defined(LGIT_IEF)
 static char ief_on_set0[2] = {0xE0, 0x07};
 static char ief_cabc_set[6] = {0xC8, 0x22, 0x22, 0x22, 0x33, 0x93};//MIE ON
@@ -1778,7 +1775,7 @@ static char ief_set1[5] = {0xE1, 0x00, 0x00, 0x01, 0x01};
 static char ief_set2[3] = {0xE2, 0x01, 0x0F};
 static char ief_set3[6] = {0xE3, 0x00, 0x00, 0x31, 0x35, 0x00};
 #endif
-//                                       
+//LGE_UPDATE_E hojin.ryu@lge.com 20120629
 
 static char osc_setting[4] =     {0xC0, 0x00, 0x0A, 0x10};
 static char power_setting3[13] = {0xC3, 0x00, 0x88, 0x03, 0x20, 0x01, 0x57, 0x4F, 0x33,0x02,0x38,0x38,0x00};
@@ -1888,7 +1885,7 @@ static struct dsi_cmd_desc lgit_power_off_set_2[] = {
 
 // values of normal setting START(not DSV)
 
-//                                                                                             
+//LGE_UPDATE_S hojin.ryu@lge.com 20120629 IEF function On/Off sets are added for camera preview
 #ifdef LGIT_IEF_SWITCH
 static struct dsi_cmd_desc lgit_ief_off_set[] = {		
 	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(ief_off_set6),ief_off_set6},
@@ -1908,7 +1905,7 @@ static struct dsi_cmd_desc lgit_ief_on_set[] = {
 	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(ief_on_set6),ief_on_set6},
 };
 #endif
-//                                       
+//LGE_UPDATE_E hojin.ryu@lge.com 20120629
 
 static struct msm_panel_common_pdata mipi_lgit_pdata = {
 	.backlight_level = mipi_lgit_backlight_level,
@@ -1930,6 +1927,10 @@ static struct msm_panel_common_pdata mipi_lgit_pdata = {
 	.power_off_set_2 = lgit_power_off_set_2,
 	.power_off_set_size_1 = ARRAY_SIZE(lgit_power_off_set_1),
 	.power_off_set_size_2 =ARRAY_SIZE(lgit_power_off_set_2),
+#if defined(CONFIG_LGE_BACKLIGHT_CABC)
+	.bl_pwm_disable = lm3530_lcd_backlight_pwm_disable,
+#endif
+	.bl_on_status = lm3530_lcd_backlight_on_status,
 };
 static struct platform_device mipi_dsi_lgit_panel_device = {
 	.name = "mipi_lgit",
@@ -1938,7 +1939,7 @@ static struct platform_device mipi_dsi_lgit_panel_device = {
 		.platform_data = &mipi_lgit_pdata,
 	}
 };
-//                                       
+//LGE_UPDATE_E hojin.ryu@lge.com 20120629
 #elif defined(CONFIG_FB_MSM_MIPI_LGIT_VIDEO_FHD_PT) ||\
 	defined(CONFIG_FB_MSM_MIPI_LGIT_VIDEO_FHD_INVERSE_PT)
 static char exit_sleep_mode[2]={0x11,0x00};
@@ -1962,7 +1963,7 @@ void __init apq8064_init_fb(void)
 
 #ifndef CONFIG_MACH_LGE
 	platform_device_register(&lvds_chimei_panel_device);
-#endif /*                */
+#endif /* CONFIG_MACH_LGE*/
 
 #ifdef CONFIG_FB_MSM_WRITEBACK_MSM_PANEL
 	platform_device_register(&wfd_panel_device);
@@ -1981,12 +1982,12 @@ void __init apq8064_init_fb(void)
 		platform_device_register(&mipi_dsi_toshiba_panel_device);
 	if (machine_is_mpq8064_dtv())
 		platform_device_register(&lvds_frc_panel_device);
-#endif /*                 */
+#endif /* CONFIG_MACH_LGE */
 
 	msm_fb_register_device("mdp", &mdp_pdata);
 #ifndef CONFIG_MACH_LGE
 	msm_fb_register_device("lvds", &lvds_pdata);
-#endif /*                 */
+#endif /* CONFIG_MACH_LGE */
 	msm_fb_register_device("mipi_dsi", &mipi_dsi_pdata);
 	platform_device_register(&hdmi_msm_device);
 	msm_fb_register_device("dtv", &dtv_pdata);
@@ -2063,7 +2064,7 @@ void __init apq8064_set_display_params(char *prim_panel, char *ext_panel,
 	msm_fb_pdata.ext_resolution = resolution;
         hdmi_msm_data.is_mhl_enabled = mhl_display_enabled;
 }
-#endif /*                 */
+#endif /* CONFIG_MACH_LGE */
 
 #define I2C_SURF 1
 #define I2C_FFA  (1 << 1)
@@ -2083,18 +2084,6 @@ struct i2c_registry {
 #define PWM_BRIGHTNESS 0x20
 #endif
 
-struct backlight_platform_data {
-   void (*platform_init)(void);
-   int gpio;
-   unsigned int mode;
-   int max_current;
-   int init_on_boot;
-   int min_brightness;
-   int max_brightness;
-   int default_brightness;
-   int factory_brightness;
-};
-
 #if defined (CONFIG_BACKLIGHT_LM3530)
 static struct backlight_platform_data lm3530_data = {
 
@@ -2104,11 +2093,11 @@ static struct backlight_platform_data lm3530_data = {
 #else
 	.max_current = 0x17,					//20121107 ej.jung ABS : Exp. -> Linear (0x15 -> 0x17)
 #endif
-	.min_brightness = 0x01,
-	.max_brightness = 0x71,
-	.default_brightness = 0x69,
-	.factory_brightness = 0x36,
-	
+	.min_brightness = 0x02,
+	.max_brightness = 0x72,
+	.default_brightness = 0x11,
+	.blmap = NULL,
+	.blmap_size = 0,
 };
 #elif defined(CONFIG_BACKLIGHT_LM3533)
 static struct backlight_platform_data lm3533_data = {
@@ -2121,7 +2110,7 @@ static struct backlight_platform_data lm3533_data = {
 	.min_brightness = 0x05,
 	.max_brightness = 0xFF,
 	.default_brightness = 0x9C,
-	.factory_brightness = 0x45,
+	//.factory_brightness = 0x45,
 };
 #endif
 static struct i2c_board_info msm_i2c_backlight_info[] = {

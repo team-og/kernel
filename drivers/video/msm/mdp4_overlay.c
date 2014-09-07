@@ -114,7 +114,7 @@ int mdp4_set_dmb_status(int flag) {
 	dmb_status = flag;
 	return 0;
 }
-#endif /*               */
+#endif /* LGE_BROADCAST */
 
 struct mdp4_overlay_perf {
 	u32 mdp_clk_rate;
@@ -873,9 +873,9 @@ void mdp4_overlay_rgb_setup(struct mdp4_overlay_pipe *pipe)
 	mask = 0xFFFEFFFF;
 	pipe->op_mode = (pipe->op_mode & mask) | (curr & ~mask);
 #if defined(CONFIG_FB_MSM_MIPI_LGIT_VIDEO_WUXGA_INVERSE_PT) || defined(CONFIG_FB_MSM_MIPI_LGIT_VIDEO_FHD_INVERSE_PT)
-	//                                                                                    
+	//2012-11-20 taewonee.kim@lge.com : QCT pre patch for the inverted clone image [START]
 	if((pipe->mfd->panel_info.type != DTV_PANEL)&&(pipe->mfd->panel_info.type != WRITEBACK_PANEL))
-	//                                                                                  
+	//2012-11-20 taewonee.kim@lge.com : QCT pre patch for the inverted clone image [END]
 	{
 		if (panel_rotate_180 && (pipe->pipe_num == OVERLAY_PIPE_RGB1 || pipe->pipe_num == OVERLAY_PIPE_RGB2))
 		{
@@ -1013,9 +1013,9 @@ void mdp4_overlay_vg_setup(struct mdp4_overlay_pipe *pipe)
 	uint32 format, pattern, luma_offset, chroma_offset;
 #if defined (CONFIG_LGE_BROADCAST_TDMB) || defined (CONFIG_LGE_BROADCAST_ONESEG)
 	uint32 mask, curr, addr;
-#else /*               */
+#else /* LGE_BROADCAST */
 	uint32 mask;
-#endif /*               */
+#endif /* LGE_BROADCAST */
 	int pnum, ptype, i;
 	uint32_t block;
 
@@ -1094,9 +1094,9 @@ void mdp4_overlay_vg_setup(struct mdp4_overlay_pipe *pipe)
 
 
 #if defined(CONFIG_FB_MSM_MIPI_LGIT_VIDEO_WUXGA_INVERSE_PT) || defined(CONFIG_FB_MSM_MIPI_LGIT_VIDEO_FHD_INVERSE_PT)
-	//                                                                                    
+	//2012-11-20 taewonee.kim@lge.com : QCT pre patch for the inverted clone image [START]
 	if((pipe->mfd->panel_info.type != DTV_PANEL) && (pipe->mfd->panel_info.type != WRITEBACK_PANEL))
-	//                                                                                  
+	//2012-11-20 taewonee.kim@lge.com : QCT pre patch for the inverted clone image [END]
 	{
 		if (panel_rotate_180)
 		{
@@ -1207,7 +1207,7 @@ void mdp4_overlay_vg_setup(struct mdp4_overlay_pipe *pipe)
 #endif	/* updates in real time video display color tunnung csc table for 1seg */
 	}
 	pipe->op_mode = (pipe->op_mode & mask) | (curr & ~mask);
-#endif /*              */
+#endif /* LGE_BROADCAST*/
 
 	/* luma component plane */
 	outpdw(vg_base + 0x0010, pipe->srcp0_addr + luma_offset);

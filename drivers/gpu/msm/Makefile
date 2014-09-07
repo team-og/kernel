@@ -1,4 +1,4 @@
-ccflags-y := -Iinclude/drm -Idrivers/gpu/msm
+ccflags-y := -Iinclude/uapi/drm -Iinclude/drm -Idrivers/gpu/msm
 
 msm_kgsl_core-y = \
 	kgsl.o \
@@ -23,8 +23,10 @@ msm_kgsl_core-$(CONFIG_SYNC) += kgsl_sync.o
 msm_adreno-y += \
 	adreno_ringbuffer.o \
 	adreno_drawctxt.o \
+	adreno_dispatch.o \
 	adreno_postmortem.o \
 	adreno_snapshot.o \
+	adreno_trace.o \
 	adreno_a2xx.o \
 	adreno_a2xx_trace.o \
 	adreno_a2xx_snapshot.o \

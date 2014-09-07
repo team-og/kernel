@@ -462,6 +462,9 @@ struct msm_panel_common_pdata {
 	u32 splash_screen_size;
 	char mdp_iommu_split_domain;
 	bool cabc_off;
+	void (*bl_pwm_disable)(void);
+	int (*bl_on_status)(void);
+
 };
 
 

@@ -557,8 +557,8 @@ extern uint32 p_lg_qc_lcdc_lut[];
 extern int g_kcal_r;
 extern int g_kcal_g;
 extern int g_kcal_b;
-#endif /*                      */
-#endif /*                        */
+#endif /* CONFIG_LGE_KCAL_QLUT */
+#endif /* CONFIG_LGE_QC_LCDC_LUT */
 
 static int mdp_lut_hw_update(struct fb_cmap *cmap)
 {

@@ -143,7 +143,7 @@ extern unsigned long mdp_timer_duration;
 #if defined(CONFIG_LGE_BROADCAST_TDMB) || defined(CONFIG_LGE_BROADCAST_ONESEG)
 extern struct mdp_csc_cfg dmb_csc_convert;
 extern int mdp4_set_dmb_status(int flag);
-#endif /*               */
+#endif /* LGE_BROADCAST */
 
 static int msm_fb_register(struct msm_fb_data_type *mfd);
 static int msm_fb_open(struct fb_info *info, int user);
@@ -4079,7 +4079,7 @@ static int msm_fb_ioctl(struct fb_info *info, unsigned int cmd,
 #if defined(CONFIG_LGE_BROADCAST_TDMB) || defined(CONFIG_LGE_BROADCAST_ONESEG)
 	int dmb_flag = 0;
 	struct mdp_csc_cfg dmb_csc_cfg;
-#endif /*               */
+#endif /* LGE_BROADCAST */
 	struct mdp_page_protection fb_page_protection;
 	struct msmfb_mdp_pp mdp_pp;
 	struct mdp_buf_sync buf_sync;
@@ -4418,7 +4418,7 @@ static int msm_fb_ioctl(struct fb_info *info, unsigned int cmd,
 			return ret;
 		memcpy(dmb_csc_convert.csc_mv,dmb_csc_cfg.csc_mv,sizeof(dmb_csc_cfg.csc_mv));
 		break;
-#endif /*               */
+#endif /* LGE_BROADCAST */
 
 	default:
 		MSM_FB_INFO("MDP: unknown ioctl (cmd=%x) received!\n", cmd);

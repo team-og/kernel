@@ -1,4 +1,4 @@
-/*  Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/*  Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -30,6 +30,11 @@
 
 #define CMD_STATUS_SUCCESS 0
 #define CMD_STATUS_FAIL 1
+
+#define VOC_PATH_PASSIVE 0
+#define VOC_PATH_FULL 1
+#define VOC_PATH_VOLTE_PASSIVE 2
+#define VOC_PATH_SGLTE_PASSIVE 3
 
 #define CAL_BUFFER_SIZE		4096
 #define NUM_CVP_CAL_BLOCKS	75
@@ -152,9 +157,9 @@ uint16_t voc_get_session_id(char *name)
 		else if (!strncmp(name, "VoLTE session", 13))
 			session_id =
 			common.voice[VOC_PATH_VOLTE_PASSIVE].session_id;
-		else if (!strncmp(name, "Voice2 session", 14))
+		else if (!strncmp(name, "SGLTE session", 13))
 			session_id =
-			common.voice[VOC_PATH_VOICE2_PASSIVE].session_id;
+			common.voice[VOC_PATH_SGLTE_PASSIVE].session_id;
 		else
 			session_id = common.voice[VOC_PATH_FULL].session_id;
 
@@ -195,9 +200,9 @@ static bool is_volte_session(u16 session_id)
 	return (session_id == common.voice[VOC_PATH_VOLTE_PASSIVE].session_id);
 }
 
-static bool is_voice2_session(u16 session_id)
+static bool is_sglte_session(u16 session_id)
 {
-	return (session_id == common.voice[VOC_PATH_VOICE2_PASSIVE].session_id);
+	return (session_id == common.voice[VOC_PATH_SGLTE_PASSIVE].session_id);
 }
 
 /* Only for memory allocated in the voice driver */
@@ -352,9 +357,9 @@ static int voice_send_dual_control_cmd(struct voice_data *v)
 		pr_err("%s: apr_mvm is NULL.\n", __func__);
 		return -EINVAL;
 	}
-	pr_debug("%s: VoLTE/Voice2 command to MVM\n", __func__);
+	pr_debug("%s: VoLTE/SGLTE command to MVM\n", __func__);
 	if (is_volte_session(v->session_id) ||
-			is_voice2_session(v->session_id)) {
+			is_sglte_session(v->session_id)) {
 
 		mvm_handle = voice_get_mvm_handle(v);
 		mvm_voice_ctl_cmd.hdr.hdr_field = APR_HDR_FIELD(
@@ -430,7 +435,7 @@ static int voice_create_mvm_cvs_session(struct voice_data *v)
 	if (!mvm_handle) {
 		if (is_voice_session(v->session_id) ||
 				is_volte_session(v->session_id) ||
-				is_voice2_session(v->session_id)) {
+				is_sglte_session(v->session_id)) {
 			mvm_session_cmd.hdr.hdr_field = APR_HDR_FIELD(
 						APR_MSG_TYPE_SEQ_CMD,
 						APR_HDR_LEN(APR_HDR_SIZE),
@@ -450,7 +455,7 @@ static int voice_create_mvm_cvs_session(struct voice_data *v)
 				strlcpy(mvm_session_cmd.mvm_session.name,
 				"default volte voice",
 				sizeof(mvm_session_cmd.mvm_session.name) - 1);
-			} else if (is_voice2_session(v->session_id)) {
+			} else if (is_sglte_session(v->session_id)) {
 				strlcpy(mvm_session_cmd.mvm_session.name,
 				"default modem voice2",
 				sizeof(mvm_session_cmd.mvm_session.name));
@@ -517,7 +522,7 @@ static int voice_create_mvm_cvs_session(struct voice_data *v)
 	if (!cvs_handle) {
 		if (is_voice_session(v->session_id) ||
 			is_volte_session(v->session_id) ||
-			is_voice2_session(v->session_id)) {
+			is_sglte_session(v->session_id)) {
 			pr_debug("%s: creating CVS passive session\n",
 				 __func__);
 
@@ -538,7 +543,7 @@ static int voice_create_mvm_cvs_session(struct voice_data *v)
 				strlcpy(cvs_session_cmd.cvs_session.name,
 				"default volte voice",
 				sizeof(cvs_session_cmd.cvs_session.name) - 1);
-			} else if (is_voice2_session(v->session_id)) {
+			} else if (is_sglte_session(v->session_id)) {
 				strlcpy(cvs_session_cmd.cvs_session.name,
 				"default modem voice2",
 				sizeof(cvs_session_cmd.cvs_session.name));
@@ -942,9 +947,7 @@ static int voice_config_cvs_vocoder(struct voice_data *v)
 	}
 	/* Set encoder properties. */
 	switch (common.mvs_info.media_type) {
-	case VSS_MEDIA_ID_EVRC_MODEM:
-	case VSS_MEDIA_ID_4GV_NB_MODEM:
-	case VSS_MEDIA_ID_4GV_WB_MODEM: {
+	case VSS_MEDIA_ID_EVRC_MODEM: {
 		struct cvs_set_cdma_enc_minmax_rate_cmd cvs_set_cdma_rate;
 
 		pr_debug("Setting EVRC min-max rate\n");
@@ -1397,8 +1400,7 @@ static int voice_send_cvs_register_cal_cmd(struct voice_data *v)
 
 	/* get the cvs cal data */
 	get_all_vocstrm_cal(&cal_block);
-	if (cal_block.cal_size == 0 ||
-	    cal_block.cal_size > CVS_CAL_SIZE)
+	if (cal_block.cal_size == 0)
 		goto fail;
 
 	if (v == NULL) {
@@ -1473,8 +1475,7 @@ static int voice_send_cvs_deregister_cal_cmd(struct voice_data *v)
 	u16 cvs_handle;
 
 	get_all_vocstrm_cal(&cal_block);
-	if (cal_block.cal_size == 0 ||
-	    cal_block.cal_size > CVS_CAL_SIZE)
+	if (cal_block.cal_size == 0)
 		return 0;
 
 	if (v == NULL) {
@@ -1530,8 +1531,7 @@ static int voice_send_cvp_map_memory_cmd(struct voice_data *v)
 
 	/* get all cvp cal data */
 	get_all_cvp_cal(&cal_block);
-	if (cal_block.cal_size == 0 ||
-	    cal_block.cal_size > CVP_CAL_SIZE)
+	if (cal_block.cal_size == 0)
 		goto fail;
 
 	if (v == NULL) {
@@ -1603,8 +1603,7 @@ static int voice_send_cvp_unmap_memory_cmd(struct voice_data *v)
 	uint32_t cal_paddr = 0;
 
 	get_all_cvp_cal(&cal_block);
-	if (cal_block.cal_size == 0 ||
-	    cal_block.cal_size > CVP_CAL_SIZE)
+	if (cal_block.cal_size == 0)
 		return 0;
 
 	if (v == NULL) {
@@ -1672,8 +1671,7 @@ static int voice_send_cvs_map_memory_cmd(struct voice_data *v)
 
 	/* get all cvs cal data */
 	get_all_vocstrm_cal(&cal_block);
-	if (cal_block.cal_size == 0 ||
-	    cal_block.cal_size > CVS_CAL_SIZE)
+	if (cal_block.cal_size == 0)
 		goto fail;
 
 	if (v == NULL) {
@@ -1745,8 +1743,7 @@ static int voice_send_cvs_unmap_memory_cmd(struct voice_data *v)
 	uint32_t cal_paddr = 0;
 
 	get_all_vocstrm_cal(&cal_block);
-	if (cal_block.cal_size == 0 ||
-	    cal_block.cal_size > CVS_CAL_SIZE)
+	if (cal_block.cal_size == 0)
 		return 0;
 
 	if (v == NULL) {
@@ -1815,8 +1812,7 @@ static int voice_send_cvp_register_cal_cmd(struct voice_data *v)
 
       /* get the cvp cal data */
 	get_all_vocproc_cal(&cal_block);
-	if (cal_block.cal_size == 0 ||
-	    cal_block.cal_size > CVP_CAL_SIZE)
+	if (cal_block.cal_size == 0)
 		goto fail;
 
 	if (v == NULL) {
@@ -1891,8 +1887,7 @@ static int voice_send_cvp_deregister_cal_cmd(struct voice_data *v)
 	u16 cvp_handle;
 
 	get_all_vocproc_cal(&cal_block);
-	if (cal_block.cal_size == 0 ||
-	    cal_block.cal_size > CVP_CAL_SIZE)
+	if (cal_block.cal_size == 0)
 		return 0;
 
 	if (v == NULL) {
@@ -1942,7 +1937,6 @@ static int voice_send_cvp_register_vol_cal_table_cmd(struct voice_data *v)
 	struct cvp_register_vol_cal_table_cmd cvp_reg_cal_tbl_cmd;
 	struct acdb_cal_block vol_block;
 	struct acdb_cal_block voc_block;
-	struct acdb_cal_block cvp_block;
 	int ret = 0;
 	void *apr_cvp;
 	u16 cvp_handle;
@@ -1952,10 +1946,8 @@ static int voice_send_cvp_register_vol_cal_table_cmd(struct voice_data *v)
 	/* get the cvp vol cal data */
 	get_all_vocvol_cal(&vol_block);
 	get_all_vocproc_cal(&voc_block);
-	get_all_cvp_cal(&cvp_block);
 
-	if (vol_block.cal_size == 0 ||
-	    cvp_block.cal_size > CVP_CAL_SIZE)
+	if (vol_block.cal_size == 0)
 		goto fail;
 
 	if (v == NULL) {
@@ -2027,16 +2019,12 @@ static int voice_send_cvp_deregister_vol_cal_table_cmd(struct voice_data *v)
 {
 	struct cvp_deregister_vol_cal_table_cmd cvp_dereg_cal_tbl_cmd;
 	struct acdb_cal_block cal_block;
-	struct acdb_cal_block voc_block;
 	int ret = 0;
 	void *apr_cvp;
 	u16 cvp_handle;
 
 	get_all_vocvol_cal(&cal_block);
-	get_all_cvp_cal(&voc_block);
-
-	if (cal_block.cal_size == 0 ||
-	    voc_block.cal_size > CVP_CAL_SIZE)
+	if (cal_block.cal_size == 0)
 		return 0;
 
 	if (v == NULL) {
@@ -2259,11 +2247,10 @@ static int voice_setup_vocproc(struct voice_data *v)
 	}
 	if (common.ec_ref_ext == true) {
 		ret = voice_send_set_device_cmd_v2(v);
-		if (ret < 0) {
+		if (ret < 0)
 			pr_err("%s:  set device V2 failed rc =%x\n",
 			       __func__, ret);
 			goto fail;
-		}
 	}
 	/* send cvs cal */
 	ret = voice_send_cvs_map_memory_cmd(v);
@@ -3243,11 +3230,10 @@ int voc_enable_cvp(uint16_t session_id)
 
 		if (common.ec_ref_ext == true) {
 			ret = voice_send_set_device_cmd_v2(v);
-			if (ret < 0) {
+			if (ret < 0)
 				pr_err("%s: set device V2 failed\n"
 				       "rc =%x\n", __func__, ret);
 				goto fail;
-			}
 		} else {
 			ret = voice_send_set_device_cmd(v);
 			if (ret < 0) {

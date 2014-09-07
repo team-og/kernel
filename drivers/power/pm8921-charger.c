@@ -48,7 +48,7 @@
 #ifdef CONFIG_BATTERY_MAX17048
 #include <linux/max17048_fuelgauge.h>
 #endif
-#endif //                       
+#endif //CONFIG_LGE_PM_EXT_GAUGE
 
 #ifdef CONFIG_LGE_WIRELESS_CHARGER
 #include <linux/interrupt.h>
@@ -134,8 +134,8 @@ static int ADAPTIVE_MA_TABLE_CHARGERLOGO[] =          { 500, 700, 900, 1300 };
 //static struct delayed_work      adaptive_usb_current_work;
 //static struct workqueue_struct *adaptive_usb_current_queue;
 static int search_iusb_max_status;
-#endif //                     
-#endif //             
+#endif //CONFIG_LGE_PM_ADP_CHG
+#endif //CONFIG_LGE_PM
 
 #define CHG_BUCK_CLOCK_CTRL	0x14
 #define CHG_BUCK_CLOCK_CTRL_8038	0xD
@@ -427,7 +427,7 @@ struct pm8921_chg_chip {
 	bool				enable_tcxo_warmup_delay;
 	struct msm_xo_voter		*voter;
 #ifdef CONFIG_LGE_CHARGER_TEMP_SCENARIO
-	/*                                                     */
+	/* Create work for temp scerario kwangjae1.lee@lge.com */
 	struct delayed_work		monitor_batt_temp_work;
 	struct wake_lock        monitor_batt_temp_wake_lock;
 	int				temp_level_1;
@@ -605,12 +605,12 @@ static	void	wireless_information(struct work_struct *work);
 static unsigned int last_stop_charging;
 static unsigned int chg_batt_temp_state;
 /*
-                               
-                                                                         
+ * kiwone.seo@lge.com 2011-0609
+ * for show charging ani.although charging is stopped : charging scenario
  */
 static int pseudo_ui_charging;
 static int last_usb_chg_current;
-/*                                                                  */
+/* 120712 cs.kim@lge.com Implements Thermal Mitigation iUSB setting */
 static int pre_mitigation;
 static int soc_limit;
 #endif
@@ -619,7 +619,7 @@ static int wlc_charging_status;
 #endif
 
 #ifdef CONFIG_LGE_PM
-/*                                               */
+/* add for thermister test kwangjae1.lee@lge.com */
 struct pseudo_batt_info_type pseudo_batt_info = {
         .mode = 0,
 };
@@ -644,7 +644,7 @@ static int g_batt_vol = 0;
 #define FIRST_CHANGING_MODE_UPDATE_TIME  3000
 #define CHG_COMPLETE_VOL 	4350
 #define CHG_COMPLETE_TOLERANCE 	10
-/*                                                   */
+/*doosan.baek@lge.com 20121108 Add battery condition */
 static int g_batt_age = 0;
 static int pseudo_batt_age_mode = 0;
 #endif
@@ -675,7 +675,7 @@ int max17047_get_batt_vol(void)
 #endif
 
 #ifdef CONFIG_BATTERY_MAX17047
-/*                                                   */
+/*doosan.baek@lge.com 20121108 Add battery condition */
 void lge_pm_battery_age_update(void)
 {
 	if (pseudo_batt_age_mode)
@@ -849,7 +849,7 @@ static bool is_factory_cable(void)
 		return 0;
 }
 
-/*                                                           */
+/* jungwoo.yun@lge.com 2012-07-21 asked by mass production SW*/
 static bool is_real_battery_or_factory_cable(struct pm8921_chg_chip *chip)
 {
 	if (pm_chg_get_rt_status(chip, BATT_INSERTED_IRQ))
@@ -2279,7 +2279,7 @@ static enum power_supply_property msm_batt_power_props[] = {
 	POWER_SUPPLY_PROP_EXT_PWR_CHECK,
 	POWER_SUPPLY_PROP_REAL_BATT_PRESENT,
 #ifdef CONFIG_BATTERY_MAX17047
-/*                                                   */
+/*doosan.baek@lge.com 20121108 Add battery condition */
         POWER_SUPPLY_PROP_BATTERY_CONDITION,
         POWER_SUPPLY_PROP_BATTERY_AGE,
 #endif
@@ -2328,7 +2328,7 @@ static int ext_gauge_get_capacity(struct pm8921_chg_chip *chip)
 	if (percent_soc <= 10)
 		pr_warn_ratelimited("low battery charge = %d%%\n", percent_soc);
 
-/*                                                                                                  */
+/*LGE_S seonho.na@lge.com 2013-04-12 set vbatdet threshold to resume charge when soc fell below 99% */
 	if (percent_soc <= chip->resume_charge_percent &&
 		chip->recent_reported_soc == (chip->resume_charge_percent + 1))
 	{
@@ -2351,7 +2351,7 @@ static int ext_gauge_get_capacity(struct pm8921_chg_chip *chip)
 			pm_chg_vbatdet_set(the_chip, PM8921_CHG_VBATDET_MAX);
 		}
 	}
-/*                                                                                                  */
+/*LGE_E seonho.na@lge.com 2013-04-12 set vbatdet threshold to resume charge when soc fell below 99% */
 
 #ifdef CONFIG_LGE_PM
 	if (pseudo_batt_info.mode == 1) {
@@ -2391,8 +2391,8 @@ static int ext_gauge_get_voltage(struct pm8921_chg_chip *chip)
 
 	return voltage;
 }
-#endif //                                   
-//                                    
+#endif //if defined(CONFIG_LGE_PM_EXT_GAUGE)
+//if !defined(CONFIG_LGE_PM_EXT_GAUGE)
 static int get_prop_battery_uvolts(struct pm8921_chg_chip *chip)
 {
 	int rc;
@@ -2470,7 +2470,7 @@ static int get_prop_batt_status(struct pm8921_chg_chip *chip)
 	int fsm_state = pm_chg_get_fsm_state(chip);
 	int i;
 #ifdef CONFIG_LGE_PM
-	/*                                                                                    */
+	/* jooyeong.lee@lge.com 2012-01-19 Change battery status sequence when start charging */
 	int batt_capacity=0;
 #endif
 
@@ -2493,7 +2493,7 @@ static int get_prop_batt_status(struct pm8921_chg_chip *chip)
 			batt_state = map[i].batt_state;
 
 #ifdef CONFIG_LGE_PM
-	/*                                                                                    */
+	/* jooyeong.lee@lge.com 2012-01-19 Change battery status sequence when start charging */
 	if (batt_state == POWER_SUPPLY_STATUS_FULL) {
 #ifdef CONFIG_LGE_PM_EXT_GAUGE
 		batt_capacity = ext_gauge_get_capacity(chip);
@@ -2686,7 +2686,7 @@ static int get_prop_batt_health(struct pm8921_chg_chip *chip)
 	int rc, temp;
 
 #ifdef CONFIG_LGE_PM
-	/*                                                        */
+	/* LGE does not PMIC temp IRQ, so directly read batt-ADC. */
 	rc = get_prop_batt_temp(chip, &temp);
 	if (temp > BATT_TEMP_LEVEL_OVERHEAT*10)
 		return POWER_SUPPLY_HEALTH_OVERHEAT;
@@ -2757,7 +2757,7 @@ static int get_prop_batt_temp(struct pm8921_chg_chip *chip, int *temp)
 	pr_debug("batt_temp phy = %lld meas = 0x%llx\n", result.physical,
 						result.measurement);
 #ifdef CONFIG_LGE_PM
-	/*                                               */
+	/* add for thermister test kwangjae1.lee@lge.com */
 	if (pseudo_batt_info.mode)
 		*temp = (pseudo_batt_info.temp * 10);
 	else
@@ -2899,7 +2899,7 @@ static int pm_batt_power_get_property(struct power_supply *psy,
 		val->intval = pm_chg_get_rt_status(chip, BATT_INSERTED_IRQ);
 		break;
 #ifdef CONFIG_BATTERY_MAX17047
-/*                                                   */
+/*doosan.baek@lge.com 20121108 Add battery condition */
 	case POWER_SUPPLY_PROP_BATTERY_CONDITION:
 		val->intval = lge_pm_get_battery_condition();
 		break;
@@ -3206,7 +3206,7 @@ int pm8921_is_batfet_closed(void)
 }
 EXPORT_SYMBOL(pm8921_is_batfet_closed);
 #ifdef CONFIG_LGE_PM
-/*                                                                                */
+/* jungwoo.yun@lge.com 2012-08-07 check battery preset regardless of factory cable*/
 int pm8921_is_real_battery_present(void)
 {
 	if (!the_chip) {
@@ -3554,7 +3554,7 @@ static void handle_usb_insertion_removal(struct pm8921_chg_chip *chip)
 		pm8921_bms_calibrate_hkadc();
 	}
 
-#if 0	//                 
+#if 0	//def CONFIG_LGE_PM
 	/* consider more .... */
 	/* charger-in:4300mV, charger-out:4360mV */
 	if (usb_present) pm_chg_vbatdet_set(chip, chip->max_voltage_mv - chip->resume_voltage_delta);
@@ -3570,7 +3570,7 @@ static void handle_usb_insertion_removal(struct pm8921_chg_chip *chip)
 	if (usb_present) {
 		pseudo_ui_charging = 0;
 		last_usb_chg_current = 0;
-		/*                                                                  */
+		/* 120712 cs.kim@lge.com Implements Thermal Mitigation iUSB setting */
 		pre_mitigation = 0;
 	}
 #endif
@@ -3875,17 +3875,17 @@ static void adaptive_usb_current_worker(struct work_struct *work)
 if ( (lge_pm_get_cable_type() == CABLE_NONE || lge_pm_get_cable_type() == CABLE_270K ) &&
 		the_chip->usb_type == POWER_SUPPLY_TYPE_USB_DCP &&
 		search_iusb_max_status == IUSB_MAX_INCREASE &&
-		!thermal_mitigation ) /*                                                                  */
+		!thermal_mitigation ) /* 120712 cs.kim@lge.com Implements Thermal Mitigation iUSB setting */
 #elif defined(CONFIG_MACH_APQ8064_AWIFI)
 	if ( (lge_pm_get_cable_type() == CABLE_NONE || lge_pm_get_cable_type() == CABLE_330K ) &&
 		the_chip->usb_type == POWER_SUPPLY_TYPE_USB_DCP &&
 		search_iusb_max_status == IUSB_MAX_INCREASE &&
-		!thermal_mitigation ) /*                                                                  */
+		!thermal_mitigation ) /* 120712 cs.kim@lge.com Implements Thermal Mitigation iUSB setting */
 #else
 	if ( lge_pm_get_cable_type() == CABLE_NONE &&
 		the_chip->usb_type == POWER_SUPPLY_TYPE_USB_DCP &&
 		search_iusb_max_status == IUSB_MAX_INCREASE &&
-		!thermal_mitigation ) /*                                                                  */
+		!thermal_mitigation ) /* 120712 cs.kim@lge.com Implements Thermal Mitigation iUSB setting */
 #endif
 	{
 		next_ma = lge_get_next_iusb_max(1);
@@ -4006,7 +4006,7 @@ static void vin_collapse_check_worker(struct work_struct *work)
 		handle_usb_insertion_removal(chip);
 	}
 }
-#endif /*                              */
+#endif /* End of CONFIG_LGE_PM_ADP_CHG */
 
 #ifdef CONFIG_LGE_PM_REMOVE_BATT
 /* Restart the machine when Battery Remove/Insert - seonghun1.kim */
@@ -4733,7 +4733,7 @@ static irqreturn_t dcin_valid_irq_handler(int irq, void *data)
 		if (dc_present) {
 			pseudo_ui_charging = 0;
 			last_usb_chg_current = 0;
-			/*                                                                  */
+			/* 120712 cs.kim@lge.com Implements Thermal Mitigation iUSB setting */
 			pre_mitigation = 0;
 		}
 #endif					
@@ -4805,11 +4805,11 @@ static int chg_is_battery_too_hot_or_too_cold(void *data,int batt_temp, int batt
 
 			chg_batt_temp_state = CHG_BATT_STOP_CHARGING_STATE;
 			/*
-                                  
-                                                                            
-    */
+			 * kiwone.seo@lge.com 2011-0609
+			 * for show charging ani.although charging is stopped : charging scenario
+			 */
 /* CONFIG_PM_S submit ATnT temp scenario kwangjae1.lee */
-			/*                                                               */
+			/* Change termal scenario to LGE ver 1.6 - charge Icon under -10 */
 #if defined(CONFIG_MACH_APQ8064_L05E)
 			if (batt_temp_level == CHG_BATT_TEMP_LEVEL_1 ||
 				batt_temp_level == CHG_BATT_TEMP_LEVEL_6)
@@ -4837,7 +4837,7 @@ static int chg_is_battery_too_hot_or_too_cold(void *data,int batt_temp, int batt
 
 			if (the_chip)
 #ifdef CONFIG_LGE_PM
-/*                                                            */
+/* changed set current on Battery input kwangjae1.lee@lge.com */
 				pm_chg_ibatmax_set(chip, PM8921_CHG_IBATMAX_MIN);
 #else
 				pm8921_charger_vbus_draw_internal(500);
@@ -4864,11 +4864,11 @@ static int chg_is_battery_too_hot_or_too_cold(void *data,int batt_temp, int batt
 
 			chg_batt_temp_state = CHG_BATT_STOP_CHARGING_STATE;
 			/*
-                                  
-                                                                            
-    */
+			 * kiwone.seo@lge.com 2011-0609
+			 * for show charging ani.although charging is stopped : charging scenario
+			 */
 /* CONFIG_PM_S submit ATnT temp scenario kwangjae1.lee */
-			/*                                                               */
+			/* Change termal scenario to LGE ver 1.6 - charge Icon under -10 */
 #if defined(CONFIG_MACH_APQ8064_L05E)
 			if (batt_temp_level == CHG_BATT_TEMP_LEVEL_1 ||
 				batt_temp_level == CHG_BATT_TEMP_LEVEL_6)
@@ -4908,7 +4908,7 @@ static int chg_is_battery_too_hot_or_too_cold(void *data,int batt_temp, int batt
 
 			if (the_chip){
 #ifdef CONFIG_LGE_PM
-/*                                                            */
+/* changed set current on Battery input kwangjae1.lee@lge.com */
 				pm_chg_ibatmax_set(chip, chip->max_bat_chg_current);
 #else
 				pm8921_charger_vbus_draw(last_usb_chg_current);
@@ -4944,7 +4944,7 @@ static int chg_is_battery_too_hot_or_too_cold(void *data,int batt_temp, int batt
 
 			if (the_chip){
 #ifdef CONFIG_LGE_PM
-/*                                                            */
+/* changed set current on Battery input kwangjae1.lee@lge.com */
 				pm_chg_ibatmax_set(chip, chip->max_bat_chg_current);
 #else
 				pm8921_charger_vbus_draw(last_usb_chg_current);
@@ -4960,8 +4960,8 @@ static int chg_is_battery_too_hot_or_too_cold(void *data,int batt_temp, int batt
 			}
 		}
 		/*
-                                                                       
-   */
+		 * kiwone.seo@lge.com 2011-05-12, charging scenario. do not anything.
+		 */
 #if 0
 		else if ((batt_temp_level == CHG_BATT_TEMP_46_55 && batt_level <= 4000) ||
 					batt_temp_level == CHG_BATT_TEMP_42_45) {
@@ -4992,12 +4992,12 @@ static int chg_is_battery_too_hot_or_too_cold(void *data,int batt_temp, int batt
 		else {
 			chg_batt_temp_state = CHG_BATT_STOP_CHARGING_STATE;
 			/*
-                                  
-                      
-                       
-                                           */
+			 * kiwone.seo@lge.com 2011-0621
+			 * 1. stop charging
+			 * 2. remove charger
+			 * 3 insert charger while stop charging */
 /* CONFIG_PM_S submit ATnT temp scenario kwangjae1.lee */
-			/*                                                               */
+			/* Change termal scenario to LGE ver 1.6 - charge Icon under -10 */
 #if defined(CONFIG_MACH_APQ8064_L05E)
 			if (batt_temp_level == CHG_BATT_TEMP_LEVEL_1 ||
 				batt_temp_level == CHG_BATT_TEMP_LEVEL_6)
@@ -5068,7 +5068,7 @@ static void pm_batt_external_power_changed(struct power_supply *psy)
  */
 
 #ifdef CONFIG_LGE_CHARGER_TEMP_SCENARIO
-/*                                                                   */
+/* battery of therm H/W register level reading kwangjae1.lee@lge.com */
 static int get_rt_get_temp(struct pm8921_chg_chip *chip)
 {
 	int rc;
@@ -5094,7 +5094,7 @@ static void fuel_gauage_update_data(void)
 	g_batt_soc = max17047_get_battery_capacity_percent();
 	/* battery age update add */
 	pr_debug(" fuel_gauage_update_data: g_batt_soc(%d), g_batt_vol(%d)\n", g_batt_soc,  g_batt_vol);
-	/*                                                   */
+	/*doosan.baek@lge.com 20121108 Add battery condition */
 	lge_pm_battery_age_update();
 
 }
@@ -5880,7 +5880,7 @@ static void __devinit determine_initial_state(struct pm8921_chg_chip *chip)
 		schedule_delayed_work(&chip->unplug_check_work,
 			msecs_to_jiffies(UNPLUG_CHECK_WAIT_PERIOD_MS));
 #ifndef CONFIG_LGE_PM
-//                                  
+//LGE_PM_L05E, samin.ryu, need check
 		pm8921_chg_enable_irq(chip, CHG_GONE_IRQ);
 #endif
 
@@ -6314,7 +6314,7 @@ static int __devinit pm8921_chg_hw_init(struct pm8921_chg_chip *chip)
 	/* Set limit current masking when factory boot mode */
 	if (lge_get_factory_boot())
 	{
-		/*                                                                            */
+		/*LGE_S jungwoo.yun@lge.com 2012-08-06 iusbmax set to 1100mA in 56K/910K cable*/
 		if(lge_get_boot_cable_type() == LGE_BOOT_LT_CABLE_56K || lge_get_boot_cable_type() == LGE_BOOT_LT_CABLE_910K)
 		{
 			m = 0x0A;
@@ -6329,7 +6329,7 @@ static int __devinit pm8921_chg_hw_init(struct pm8921_chg_chip *chip)
 		}
 #endif
 		else
-		/*                                                                        */
+		/*LGE_E jungwoo.yun@lge.com 2012-08-06 iusbmax set to 1100mA in 910K cable*/
 		{
 			m = ARRAY_SIZE(usb_ma_table) - 1;
 		}
@@ -6797,9 +6797,9 @@ static void create_debugfs_entries(struct pm8921_chg_chip *chip)
 	}
 }
 
-/*           
-           
-                                   
+/* LGE_CHANGE
+* for ATCMD
+* 2011-11-04, janghyun.baek@lge.com
 */
 
 #ifdef CONFIG_MACH_LGE
@@ -7271,7 +7271,7 @@ static bool pm_is_chg_charge_dis_bit_set(struct pm8921_chg_chip *chip)
 
 static bool wireless_get_backlight_on(void)
 {
-#if 1//                          
+#if 1//def CONFIG_LGE_FTT_CHARGER
 	return false;
 #else
 	if(wireless_backlight_state()) {
@@ -8168,7 +8168,7 @@ static int pm8921_charger_resume(struct device *dev)
 	if(delayed_work_pending(&chip->monitor_batt_temp_work))
 		cancel_delayed_work(&chip->monitor_batt_temp_work);
 
-	/*                                                     */
+	/* Create work for temp scerario kwangjae1.lee@lge.com */
 	rc = schedule_delayed_work(&chip->monitor_batt_temp_work,
 			round_jiffies_relative(msecs_to_jiffies(1000)));
 #endif
@@ -8206,7 +8206,7 @@ static int pm8921_charger_suspend(struct device *dev)
 		cancel_delayed_work_sync(&chip->btc_override_work);
 
 #ifdef CONFIG_LGE_CHARGER_TEMP_SCENARIO
-/*                                                     */
+/* Create work for temp scerario kwangjae1.lee@lge.com */
 	if (chip->btc_override)
 		rc = cancel_delayed_work_sync(&chip->btc_override_work);
 #endif
@@ -8232,7 +8232,7 @@ static int pm8921_charger_suspend(struct device *dev)
 
 #ifdef CONFIG_LGE_CHARGER_TEMP_SCENARIO
 extern void kernel_power_off(void); //low battery protect code kwangjae1.lee
-/*                                                     */
+/* Create work for temp scerario kwangjae1.lee@lge.com */
 static void monitor_batt_temp(struct work_struct *work)
 {
 
@@ -8268,7 +8268,7 @@ static void monitor_batt_temp(struct work_struct *work)
 		batt_volt = (pseudo_batt_info.volt == 0) ? batt_volt : pseudo_batt_info.volt;
 
 	bat_voltage = get_rt_get_temp(chip);
-/*                                              */
+/* LGE_S kwangjae1.lee low battery protect code */
 	if( batt_volt < 3400 && ((pseudo_batt_info.mode == 1) || (batt_temp/10) < -10)){
 		mdelay(2000);
 		if((get_prop_battery_uvolts(chip) / 1000) < 3400){
@@ -8276,7 +8276,7 @@ static void monitor_batt_temp(struct work_struct *work)
 			kernel_power_off();
 		}
 	}
-/*                                              */
+/* LGE_E kwangjae1.lee low battery protect code */
 	pr_debug(" psudo=%d, factory=%d temp=%d, volt=%d, temp_ADC=%d\n",
 		pseudo_batt_info.mode,is_factory_cable(), batt_temp, batt_volt, bat_voltage);
 
@@ -8292,12 +8292,12 @@ static void monitor_batt_temp(struct work_struct *work)
 			printk(KERN_INFO "[PM] monitor_batt_temp: Charging stop & wake lock by Temperature Scenario\n");
 			wake_lock(&chip->monitor_batt_temp_wake_lock);
 		}
-		/*                                                                           */
+		/* When stop charging, next step do not resume charing kwangjae1.lee@lge.com */
 		pm_chg_auto_enable(chip, 0);
 		last_stop_charging = stop_charging;
 	}
 	else if (stop_charging == 0 && last_stop_charging == 1) {
-		/*                                                                          */
+		/* When stop charging, next step do not resume charing kwangjae1.lee@lge.com*/
 		pm_chg_auto_enable(chip, 1);
 		last_stop_charging = stop_charging;
 		pseudo_ui_charging = 0;
@@ -8438,9 +8438,9 @@ static void monitor_batt_temp(struct work_struct *work)
 			pre_mitigation = thermal_mitigation;
 		}
 	}
-#if 0//                                                                        
+#if 0//defined(CONFIG_LGE_WIRELESS_CHARGER) && !defined(CONFIG_LGE_FTT_CHARGER)
 	else {
-		/*                                                                */
+		/* 120412 mansu.lee@lge.com Replace wireless ibat mitigation code */
 		if(is_dc_chg_plugged_in(chip)) {
 			pr_debug("[Thermal] Wireless charger is enabled.\n");
 			if ((thermal_mitigation == 1) && (thermal_mitigation != pre_mitigation)){
@@ -8522,7 +8522,7 @@ static void monitor_batt_temp(struct work_struct *work)
 		is_battery_charging(pm_chg_get_fsm_state(chip)), pm_chg_get_fsm_state(chip), temp, batt_temp,iusb_pre);
 /*Shawn-Dbg*/}
 }
-#endif	//                                
+#endif	//CONFIG_LGE_CHARGER_TEMP_SCENARIO
 
 static int __devinit pm8921_charger_probe(struct platform_device *pdev)
 {
@@ -8627,7 +8627,7 @@ static int __devinit pm8921_charger_probe(struct platform_device *pdev)
 	chg_batt_temp_state = CHG_BATT_NORMAL_STATE;
 	pseudo_ui_charging = 0;
 	last_usb_chg_current = 0;
-	/*                                                                  */
+	/* 120712 cs.kim@lge.com Implements Thermal Mitigation iUSB setting */
 	pre_mitigation = 0;
 	soc_limit = 0;
 #endif
@@ -8809,7 +8809,7 @@ static int __devinit pm8921_charger_probe(struct platform_device *pdev)
 							(logo_delay)));
 
 #ifdef CONFIG_LGE_CHARGER_TEMP_SCENARIO
-/*                                                     */
+/* Create work for temp scerario kwangjae1.lee@lge.com */
 	wake_lock_init(&chip->monitor_batt_temp_wake_lock,
 					WAKE_LOCK_SUSPEND,"pm8921_monitor_batt_temp");
 

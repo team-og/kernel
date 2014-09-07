@@ -24,7 +24,7 @@
 #ifdef CONFIG_FB_MSM_MIPI_LGIT_VIDEO_WXGA_PT // this is for Project-G
 //#ifdef CONFIG_FB_MSM_MIPI_LGIT_VIDEO_HD_PT // this is for Project-L05E
 
-#define LGIT_IEF_SWITCH
+//#define LGIT_IEF_SWITCH
 
 #ifdef LGIT_IEF_SWITCH
 extern int mipi_lgit_lcd_ief_off(void);

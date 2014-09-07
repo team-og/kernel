@@ -1459,7 +1459,7 @@ struct mdp_csc_cfg dmb_csc_convert = {
 	{ 0x0, 0xff, 0x0, 0xff, 0x0, 0xff, },
 #endif
 };
-#endif /*                    */
+#endif /* LGE_BROADCAST_TDMB */
 #if defined(CONFIG_LGE_BROADCAST_ONESEG)
 struct mdp_csc_cfg dmb_csc_convert = {
        /*YUV2RGB*/
@@ -1474,7 +1474,7 @@ struct mdp_csc_cfg dmb_csc_convert = {
 	{ 0x0, 0xff, 0x0, 0xff, 0x0, 0xff, },
 	{ 0x0, 0xff, 0x0, 0xff, 0x0, 0xff, },
 };
-#endif /*                      */
+#endif /* LGE_BROADCAST_ONESEG */
 void mdp4_vg_csc_restore(void)
 {
         int i;

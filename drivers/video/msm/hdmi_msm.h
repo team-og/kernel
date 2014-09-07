@@ -133,9 +133,9 @@ void hdmi_msm_cec_one_touch_play(void);
 void hdmi_msm_cec_msg_send(struct hdmi_msm_cec_msg *msg);
 #endif /* CONFIG_FB_MSM_HDMI_MSM_PANEL_CEC_SUPPORT */
 
-/*           
-                                           
-                                 
+/* LGE_CHANGE
+ * default video resolution for each target
+ * 2012-09-22, chaeuk.lee@lge.com
  */
 #ifdef CONFIG_MACH_LGE
 
@@ -159,6 +159,6 @@ void hdmi_msm_cec_msg_send(struct hdmi_msm_cec_msg *msg);
 #define LGE_DEFAULT_HDMI_VIDEO_RESOLUTION HDMI_VFRMT_1280x720p60_16_9
 #endif
 
-#endif /*                 */
+#endif /* CONFIG_MACH_LGE */
 
 #endif /* __HDMI_MSM_H__ */

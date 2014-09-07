@@ -351,7 +351,7 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(real_present),
 /*2012-07-11 Add battery present check in the testmode */
 #ifdef CONFIG_BATTERY_MAX17047
-/*                                                   */
+/*doosan.baek@lge.com 20121108 Add battery condition */
 	POWER_SUPPLY_ATTR(battery_condition),
 	POWER_SUPPLY_ATTR(battery_age),
 #endif

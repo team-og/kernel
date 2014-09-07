@@ -223,8 +223,8 @@ struct mhl_common_type
 
 struct mhl_common_type  *mhl_common_state;
 
-extern void hdmi_common_send_uevent(char *buf);
-extern void hdmi_common_set_hpd_on(int on);
+//extern void hdmi_common_send_uevent(char *buf);
+//extern void hdmi_common_set_hpd_on(int on);
 
 
 #ifdef CONFIG_LG_MAGIC_MOTION_REMOCON
@@ -3827,8 +3827,8 @@ static int32_t sii8334_mhl_tx_probe(struct i2c_client *client,
 		goto error;
 	}
 
-	mhl_common_state->hdmi_hpd_on = hdmi_common_set_hpd_on;
-	mhl_common_state->send_uevent = hdmi_common_send_uevent;
+//	mhl_common_state->hdmi_hpd_on = hdmi_common_set_hpd_on;
+//	mhl_common_state->send_uevent = hdmi_common_send_uevent;
 
 #endif	/*                 */
 

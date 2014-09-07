@@ -37,7 +37,8 @@ static int set_qlut_kcal_values(int kcal_r, int kcal_g, int kcal_b)
 
 static int refresh_qlut_kcal_display(void)
 {
-	return lge_set_qlut();
+	//return lge_set_qlut();
+	return 0;
 }
 
 

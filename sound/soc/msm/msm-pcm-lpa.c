@@ -115,7 +115,9 @@ static void event_handler(uint32_t opcode,
 		if (runtime->status->hw_ptr >= runtime->control->appl_ptr) {
 			runtime->render_flag |= SNDRV_RENDER_STOPPED;
 			atomic_set(&prtd->pending_buffer, 1);
-			pr_debug("%s:lpa driver underrun\n", __func__);
+			pr_debug("%s:lpa driver underrun hw_ptr = %ld appl_ptr = %ld\n",
+				__func__, runtime->status->hw_ptr,
+				runtime->control->appl_ptr);
 			break;
 		}
 
@@ -158,7 +160,7 @@ static void event_handler(uint32_t opcode,
 		else
 			prtd->out_head =
 				(prtd->out_head + 1) & (runtime->periods - 1);
-		atomic_set(&prtd->pending_buffer, 0);
+                        atomic_set(&prtd->pending_buffer, 0);
 		break;
 	}
 	case ASM_DATA_CMDRSP_EOS:
@@ -172,13 +174,14 @@ static void event_handler(uint32_t opcode,
 			if (!atomic_read(&prtd->pending_buffer))
 				break;
 			if (runtime->status->hw_ptr >=
-				runtime->control->appl_ptr) {
-				runtime->render_flag |= SNDRV_RENDER_STOPPED;
-				atomic_set(&prtd->pending_buffer, 1);
-				pr_debug("%s:lpa driver underrun\n",
-					 __func__);
+                runtime->control->appl_ptr) {
+                runtime->render_flag |= SNDRV_RENDER_STOPPED;
+                atomic_set(&prtd->pending_buffer, 1);
+                pr_debug("%s:lpa driver underrun hw_ptr = %ld appl_ptr = %ld\n",
+                __func__, runtime->status->hw_ptr,
+                runtime->control->appl_ptr);
 				break;
-			}
+            }
 			pr_debug("%s:writing %d bytes"
 				" of buffer to dsp\n",
 				__func__, prtd->pcm_count);
@@ -269,7 +272,6 @@ static int msm_pcm_restart(struct snd_pcm_substream *substream)
 	struct output_meta_data_st output_meta_data;
 
 	pr_err("%s\n", __func__);
-	memset(&output_meta_data, 0x0, sizeof(struct output_meta_data_st));
 	if (runtime->render_flag & SNDRV_RENDER_STOPPED) {
 		buf = prtd->audio_client->port[IN].buf;
 
@@ -306,7 +308,7 @@ static int msm_pcm_restart(struct snd_pcm_substream *substream)
 				output_meta_data.meta_data_length);
 		if (q6asm_async_write(prtd->audio_client, &param) < 0)
 			pr_err("%s:q6asm_async_write failed\n",
-			__func__);
+				__func__);
 		else
 			prtd->out_head =
 				(prtd->out_head + 1) & (runtime->periods - 1);

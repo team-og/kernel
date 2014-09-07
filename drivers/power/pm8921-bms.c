@@ -32,7 +32,7 @@
 #include <linux/mutex.h>
 #include <linux/rtc.h>
 
-/*                                                          */
+/* LGE_S jungshik.park@lge.com 2012-04-18 for bms debugging */
 #ifdef LGE_BMS_DEBUG
 #define pr_bms_fmt(fmt) "[BMS:%s] " fmt, __func__
 #define dbg(fmt, ...) \
@@ -41,7 +41,7 @@
 #define dbg(fmt, ...) \
 	do {} while (0)
 #endif
-/*                                                          */
+/* LGE_E jungshik.park@lge.com 2012-04-18 for bms debugging */
 
 #ifdef CONFIG_LGE_PM
 #if !defined (CONFIG_MACH_APQ8064_L05E)
