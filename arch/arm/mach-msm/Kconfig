@@ -2619,3 +2619,10 @@ config CPU_VOLTAGE_TABLE
 	default n
 	help
 	Krait User Votlage Control
+
+config CPU_UNDERCLOCK
+	 bool "Enable CPU Underclocking"
+	default y
+	help
+	Krait underclocking
+	
