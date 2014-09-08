@@ -2613,3 +2613,9 @@ config LGE_IRRC
 config LGE_USE_STANDALONE_POWER_COLLAPSE
 	default y
 	bool "Enable LGE power collapse"
+
+config CPU_VOLTAGE_TABLE
+	 bool "Enable CPU Voltage Table via sysfs for adjustements"
+	default n
+	help
+	Krait User Votlage Control
