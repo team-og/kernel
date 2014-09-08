@@ -76,7 +76,7 @@ static void *dload_mode_addr;
 
 /* Download mode master kill-switch */
 static int dload_set(const char *val, struct kernel_param *kp);
-static int download_mode = 1;
+static int download_mode = 0;
 module_param_call(download_mode, dload_set, param_get_int,
 			&download_mode, 0644);
 
@@ -366,8 +366,8 @@ late_initcall(msm_pmic_restart_init);
 #ifdef CONFIG_KEXEC_HARDBOOT
 static void msm_kexec_hardboot_hook(void)
 {
- // Set PMIC to restart-on-poweroff
- pm8xxx_reset_pwr_off(1);
+    // Set PMIC to restart-on-poweroff
+     pm8xxx_reset_pwr_off(1);
 }
 #endif
 
