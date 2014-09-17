@@ -69,6 +69,10 @@ int override_phy_init[8] = {0x44, 0x80, 0x53, 0x81, 0x0b, 0x82, 0x13, 0x83};
 int override_phy_host_init[8] = {0x44, 0x80, 0x36, 0x81, 0x24, 0x82, 0x13, 0x83};
 #endif
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+#include <linux/fastchg.h>
+#endif
+
 #define MSM_USB_BASE	(motg->regs)
 #define DRIVER_NAME	"msm_otg"
 
@@ -1308,6 +1312,11 @@ static void msm_otg_notify_charger(struct msm_otg *motg, unsigned mA)
 		dev_err(motg->phy.dev,
 			"Failed notifying %d charger type to PMIC\n",
 							motg->chg_type);
+
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	if (force_fast_charge > 0)
+		mA = IDEV_ACA_CHG_MAX;
+#endif
 
 	if (motg->cur_power == mA)
 		return;
