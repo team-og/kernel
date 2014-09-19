@@ -124,6 +124,13 @@ config CPU_FREQ_DEFAULT_GOV_BLUACTIVE
 	 loading your cpufreq low-level hardware driver, using the
 	 'interactive' governor for latency-sensitive workloads.
 
+config CPU_FREQ_DEFAULT_GOV_SLIM
+	bool "slim"
+	select CPU_FREQ_GOV_SLIM
+	select CPU_FREQ_GOV_PERFORMANCE
+	help
+	Use the CPUFreq governor 'slim' as default.
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -237,6 +244,12 @@ config CPU_FREQ_GOV_BLUACTIVE
 	help
 	'bluactive' - This driver adds a dynamic cpufreq policy governor
 	designed for latency-sensitive workloads.
+
+config CPU_FREQ_GOV_SLIM
+	tristate "'slim' cpufreq policy governor"
+	select CPU_FREQ_TABLE
+	help
+	 'slim' - This driver adds a dynamic cpufreq policy governor.
 
 menu "x86 CPU frequency scaling drivers"
 depends on X86
