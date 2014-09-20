@@ -140,7 +140,7 @@ static int vibrator_power_set(int enable)
 	mutex_lock(&vib_lock);
 
 	//rc = regulator_set_voltage(vreg_l16, 3000000, 3000000);
-	rc = regulator_set_voltage(vreg_l16, 2800000, 2800000);
+	rc = regulator_set_voltage(vreg_l16, 2600000, 2600000);
 
 	if (rc < 0)
 		pr_err("%s: regulator_set_voltage failed\n", __func__);
