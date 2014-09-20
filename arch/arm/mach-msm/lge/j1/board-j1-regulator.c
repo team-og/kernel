@@ -745,7 +745,7 @@ apq8064_rpm_regulator_init_data[] __devinitdata = {
 #endif
 	/*	ID a_on pd ss min_uV   max_uV   supply    sys_uA init_ip */
 	RPM_LDO(L1,  1, 1, 0, 1100000, 1100000, "8921_s4",     0,  1000),
-	RPM_LDO(L2,  0, 1, 0, 1200000, 1200000, "8921_s4",     0,     0),
+	RPM_LDO(L2,  0, 1, 0, 1000000, 1200000, "8921_s4",     0,     0),
 #if defined(CONFIG_MACH_LGE)
 	/* HSUSB 3p3: max 3.5v */
 	RPM_LDO(L3,  0, 1, 0, 3075000, 3500000, NULL,          0,     0),
@@ -757,7 +757,7 @@ apq8064_rpm_regulator_init_data[] __devinitdata = {
 	RPM_LDO(L6,  0, 1, 0, 2950000, 2950000, NULL,          0,     0),
 	RPM_LDO(L7,  0, 1, 0, 1850000, 2950000, NULL,          0,     0),
 #if defined(CONFIG_MACH_LGE)
-	RPM_LDO(L8,  0, 1, 0, 2800000, 3000000, NULL,          0,     0),
+	RPM_LDO(L8,  0, 1, 0, 2000000, 3000000, NULL,          0,     0),
 #else
 	RPM_LDO(L8,  0, 1, 0, 2800000, 2800000, NULL,          0,     0),
 #endif
@@ -776,7 +776,7 @@ apq8064_rpm_regulator_init_data[] __devinitdata = {
 #else
 	RPM_LDO(L15, 0, 1, 0, 1800000, 2950000, NULL,          0,     0),
 #endif
-	RPM_LDO(L16, 0, 1, 0, 2800000, 2800000, NULL,          0,     0),
+	RPM_LDO(L16, 0, 1, 0, 2600000, 2800000, NULL,          0,     0),
 #if defined(CONFIG_MACH_LGE)
 	RPM_LDO(L17, 0, 1, 0, 2800000, 2800000, NULL,          0,     0),
 #else
