@@ -90,7 +90,7 @@
 #include "f_mtp.c"
 #include "f_accessory.c"
 
-#ifdef CONFIG_USB_G_LGE_ANDROID
+#ifdef CONFIG_USB_G_LGE_ECM
 /*           
                                          
                                    
@@ -100,10 +100,10 @@
 #define USB_ETH_RNDIS y
 #include "f_rndis.c"
 #include "rndis.c"
+#include "u_bam_data.c"
 #include "f_qc_rndis.c"
 #endif
 #include "u_ether.c"
-#include "u_bam_data.c"
 #include "f_mbim.c"
 #ifdef CONFIG_USB_G_LGE_ANDROID_AUTORUN
 #include "f_charge_only.c"
@@ -1142,7 +1142,7 @@ static struct android_usb_function ptp_function = {
 	.bind_config	= ptp_function_bind_config,
 };
 
-#ifdef CONFIG_USB_G_LGE_ANDROID
+#ifdef CONFIG_USB_G_LGE_ECM
 struct ecm_function_config {
 	u8 ethaddr[ETH_ALEN];
 	u32 vendorID;
@@ -1596,6 +1596,7 @@ static struct android_usb_function rndis_qc_function = {
 	.bind_config	= rndis_qc_function_bind_config,
 	.unbind_config	= rndis_qc_function_unbind_config,
 	.attributes	= rndis_function_attributes,
+
 };
 
 #endif /* CONFIG_USB_ANDROID_CDC_ECM */
@@ -2059,12 +2060,12 @@ static struct android_usb_function *supported_functions[] = {
 	&acm_function,
 	&mtp_function,
 	&ptp_function,
-#ifdef CONFIG_USB_G_LGE_ANDROID
+#ifdef CONFIG_USB_G_LGE_ECM
 	&ecm_function,
 #else
 	&rndis_function,
+	&rndis_qc_function,
 #endif
-//	&rndis_qc_function,
 	&mass_storage_function,
 #ifdef CONFIG_USB_G_LGE_ANDROID_AUTORUN
 	&cdrom_storage_function,

@@ -1263,5 +1263,12 @@ config USB_G_LGE_ANDROID_DIAG_OSP_SUPPORT
 	 Say y if this must be needed.
 
 	default n
+	
+config USB_G_LGE_ECM
+	boolean "Android Gadget for ECM"
+	depends on USB_G_LGE_ANDROID
+	default n
+	help
+	 Provides android gadget codes for ECM instead of RNDIS.
 
 endif # USB_GADGET

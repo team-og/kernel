@@ -542,7 +542,7 @@ static void rndis_qc_response_complete(struct usb_ep *ep,
 		status = usb_ep_queue(rndis->notify, req, GFP_ATOMIC);
 		if (status) {
 			atomic_dec(&rndis->notify_count);
-			DBG(cdev, "notify/1 --> %d\n", status);
+//			DBG(cdev, "notify/1 --> %d\n", status);
 		}
 		break;
 	}
