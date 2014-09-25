@@ -2538,7 +2538,15 @@ config MSM_HOTPLUG
 	bool "MSM Hotplug Control"
 	help
 	  CPU Hotplug control
-	  
+
+config INTELLI_HOTPLUG
+	bool "Intelli hotplug driver"
+	depends on HOTPLUG_CPU
+	default y
+	help
+	  An intelligent cpu hotplug driver for
+	  Low Latency Frequency Transition capable processors.
+
 config MSM_CPR
 	tristate "Use MSM CPR in S/W mode"
 	help
